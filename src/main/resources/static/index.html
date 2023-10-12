@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tidbyt Me</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;700&display=swap"
+            rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        body * {
+            font-family: 'Mulish', sans-serif;
+            text-align: center;
+            font-size: xx-large;
+        }
+
+        .material-icons {
+            background-color: #7459fe;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            font-size: xxx-large;
+            margin: 10px 5px;
+            background-color: #7459fe;
+            color: #fff;
+            width: 80vw;
+            max-width: 800px;
+            height: 7vh;
+            min-height: 100px;
+        }
+
+        button:hover {
+            background-color: #9480ff;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+        }
+
+        #status div {
+            padding-bottom: 10px;
+        }
+
+        #talk div {
+            padding-bottom: 10px;
+        }
+        textarea {
+            width: 80vw;
+            max-width: 800px;
+            height: 10vh;
+            min-height: 100px;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .textarea-container {
+            position: relative;
+        }
+
+        #question {
+            position: relative;
+            padding-right: 20px;
+        }
+
+        #cancel {
+            position: absolute;
+            top: 5px;
+            cursor: pointer;
+            font-size: 36px;
+            background-color: #f3f3f3; /* Light background for visibility */
+            border-radius: 50%; /* Makes it circular */
+            padding: 2px 5px;
+        }
+    </style>
+    <script>
+        function push() {
+            questionUrl = "./image?prompt=" + encodeURIComponent(document.getElementById('question').value);
+            fetch(questionUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'image/png',
+                },
+            }).then(response => response.blob())
+                .then(blob => parseResponse(blob));
+        }
+
+        function parseResponse(data) {
+            let objectURL = URL.createObjectURL(data);
+            let imageElement = document.getElementById('fetchedImage');
+            imageElement.src = objectURL;
+            imageElement.style.display = "inline-flex";
+        }
+
+        function clearTextarea() {
+            document.getElementById('question').value = '';
+            document.getElementById('question').focus();
+        }
+    </script>
+</head>
+<body>
+<div id="content">
+    <div>
+        <div class="textarea-container">
+            <textarea id="question" placeholder="Enter your image prompt here..."></textarea>
+            <span class="material-icons" onclick="clearTextarea()" id="cancel" title="Clear the Question">cancel</span>
+        </div>
+        <br/>
+        <button id="push-button" type="button" onclick="push()">Push It!</button>
+    </div>
+    <img id="fetchedImage" width="256" height="128" alt="Fetched Image" style="display:none;">
+</div>
+</body>
+</html>
