@@ -79,17 +79,36 @@
             border-radius: 50%; /* Makes it circular */
             padding: 2px 5px;
         }
+
+        #generating {
+            display: none;
+        }
     </style>
     <script>
         function push() {
-            questionUrl = "./image?prompt=" + encodeURIComponent(document.getElementById('question').value);
+            let generating = document.getElementById('generating');
+            let imageElement = document.getElementById('fetchedImage');
+            imageElement.style.display = "none";
+            generating.innerHTML = 'Generating image...';
+            generating.style.display = "block";
+            questionUrl = "./ask?prompt=" + encodeURIComponent(document.getElementById('question').value);
             fetch(questionUrl, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'image/png',
                 },
-            }).then(response => response.blob())
-                .then(blob => parseResponse(blob));
+            }).then(response => {
+                if (!response.ok) {
+                    return response.text().then(errorText => {
+                        throw new Error(errorText);
+                    });
+                }
+                return response.blob();
+            })
+            .then(blob => parseResponse(blob))
+            .catch(error => {
+                generating.innerHTML = 'There was a problem with the fetch operation:' +  error.message;
+            });
         }
 
         function parseResponse(data) {
@@ -97,6 +116,7 @@
             let imageElement = document.getElementById('fetchedImage');
             imageElement.src = objectURL;
             imageElement.style.display = "inline-flex";
+            generating.style.display = "none";
         }
 
         function clearTextarea() {
@@ -115,7 +135,8 @@
         <br/>
         <button id="push-button" type="button" onclick="push()">Push It!</button>
     </div>
-    <img id="fetchedImage" width="256" height="128" alt="Fetched Image" style="display:none;">
+    <div id="generating">Generating Image...</div>
+    <img id="fetchedImage" width="256" height="256" alt="Fetched Image" style="display:none;">
 </div>
 </body>
 </html>
