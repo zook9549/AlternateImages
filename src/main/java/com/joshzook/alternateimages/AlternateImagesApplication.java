@@ -48,7 +48,7 @@ public class AlternateImagesApplication {
         conversation.add(systemMessage);
         Map<String, String> userMessage = new HashMap<>();
         userMessage.put("role", "user");
-        userMessage.put("content", question + ".");
+        userMessage.put("content", question);
         conversation.add(userMessage);
 
         Map<String, Object> requestBody = new HashMap<>();
