@@ -39,17 +39,16 @@ public class AlternateImagesApplication {
         headers.set("Authorization", "Bearer " + chatgptApiKey);
         headers.set("Content-Type", "application/json");
 
-        // Create a conversation payload
         List<Map<String, String>> conversation = new ArrayList<>();
         Map<String, String> systemMessage = new HashMap<>();
         systemMessage.put("role", "system");
-        String engineeredPrompt = "You only generate responses used to describe images";
+        String engineeredPrompt = "You only generate responses used to describe images. Respond with a description for an image prompt of the answer only";
         log.debug("Fetching answer with prompt: {}", engineeredPrompt);
         systemMessage.put("content", engineeredPrompt);
         conversation.add(systemMessage);
         Map<String, String> userMessage = new HashMap<>();
         userMessage.put("role", "user");
-        userMessage.put("content", question + "Respond with a description for an image prompt that diagrams the answer.");
+        userMessage.put("content", question + ".");
         conversation.add(userMessage);
 
         Map<String, Object> requestBody = new HashMap<>();
@@ -65,7 +64,7 @@ public class AlternateImagesApplication {
 
         Map responseBody = response.getBody();
         String answer = ((Map<?, ?>) ((Map<?, ?>) ((List<?>) responseBody.get("choices")).get(0)).get("message")).get("content").toString();
-        log.debug("Completed getting answer: {}", answer);
+        log.debug("Completed getting image prompt: {}", answer);
         return getImage(answer);
     }
 
