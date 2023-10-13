@@ -32,7 +32,7 @@ public class AlternateImagesApplication {
     }
 
     @RequestMapping(value = "/ask", produces = "image/png")
-    public byte[] answer(@RequestParam(name = "prompt") String question) {
+    public byte[] answer(@RequestParam(name = "prompt") String question, @RequestParam(required = false) Styles style) {
         log.debug("Asking {}", question);
 
         HttpHeaders headers = new HttpHeaders();
@@ -65,13 +65,14 @@ public class AlternateImagesApplication {
         Map responseBody = response.getBody();
         String answer = ((Map<?, ?>) ((Map<?, ?>) ((List<?>) responseBody.get("choices")).get(0)).get("message")).get("content").toString();
         log.debug("Completed getting image prompt: {}", answer);
-        return getImage(answer);
+        return getImage(answer, style);
     }
 
-
-
     @RequestMapping(value = "/image", produces = "image/png")
-    public byte[] getImage(String prompt) {
+    public byte[] getImage(String prompt, @RequestParam(required = false) Styles style) {
+        if(style != null) {
+            prompt = prompt + ". Return in the style of " + style.getDisplayName();
+        }
         log.debug("Asking {}", prompt);
 
         HttpHeaders headers = new HttpHeaders();
@@ -92,6 +93,15 @@ public class AlternateImagesApplication {
         String img = ((Map<String, String>) (responseBody.get("data")).get(0)).get("b64_json");
         pushImage(img);
         return Base64.getDecoder().decode(img);
+    }
+
+    @RequestMapping(value = "/styles")
+    public Map<Styles, String> getStyles() {
+        Map<Styles, String> stylesMap = new HashMap<>();
+        for (Styles style : Styles.values()) {
+            stylesMap.put(style, style.getDisplayName());
+        }
+        return stylesMap;
     }
 
     private void pushImage(String img) {

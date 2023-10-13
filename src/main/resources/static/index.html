@@ -52,6 +52,7 @@
         #talk div {
             padding-bottom: 10px;
         }
+
         textarea {
             width: 80vw;
             max-width: 800px;
@@ -90,13 +91,43 @@
         }
     </style>
     <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch(`./styles`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => response.json())
+                .then(data => setStyles(data));
+        });
+
+        function setStyles(data) {
+            let select = document.getElementById('styles');
+            let option = document.createElement('option');
+            option.value = "";
+            option.text = "";
+            select.appendChild(option);
+            Object.keys(data).forEach(key => {
+                var option = document.createElement('option');
+                option.value = key;
+                option.text = data[key];
+                select.appendChild(option);
+            });
+        }
+
         function push() {
             let generating = document.getElementById('generating');
             let imageElement = document.getElementById('fetchedImage');
+            let style = document.getElementById('styles');
             imageElement.style.display = "none";
             generating.innerHTML = 'Generating image...';
             generating.style.display = "block";
-            questionUrl = "./ask?prompt=" + encodeURIComponent(document.getElementById('question').value);
+            let questionUrl = "./ask?prompt=" + encodeURIComponent(document.getElementById('question').value);
+            if(style != "") {
+                questionUrl += "&style=" + style.value;
+            }
             fetch(questionUrl, {
                 method: 'GET',
                 headers: {
@@ -110,10 +141,10 @@
                 }
                 return response.blob();
             })
-            .then(blob => parseResponse(blob))
-            .catch(error => {
-                generating.innerHTML = 'There was a problem with the fetch operation:' +  error.message;
-            });
+                .then(blob => parseResponse(blob))
+                .catch(error => {
+                    generating.innerHTML = 'There was a problem with the fetch operation:' + error.message;
+                });
         }
 
         function parseResponse(data) {
@@ -133,6 +164,12 @@
 <body>
 <div id="content">
     <div>
+        <div>
+            <select id="styles">
+                <options>
+                </options>
+            </select>
+        </div>
         <div class="textarea-container">
             <textarea id="question" placeholder="Enter your image prompt here..."></textarea>
             <span class="material-icons" onclick="clearTextarea()" id="cancel" title="Clear the Question">cancel</span>
