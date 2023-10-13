@@ -83,6 +83,11 @@
         #generating {
             display: none;
         }
+
+        #fetchedImage {
+            width: 500px;
+            height: 500px;
+        }
     </style>
     <script>
         function push() {
@@ -132,7 +137,6 @@
             <textarea id="question" placeholder="Enter your image prompt here..."></textarea>
             <span class="material-icons" onclick="clearTextarea()" id="cancel" title="Clear the Question">cancel</span>
         </div>
-        <br/>
         <button id="push-button" type="button" onclick="push()">Push It!</button>
     </div>
     <div id="generating">Generating Image...</div>

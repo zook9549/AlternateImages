@@ -42,7 +42,7 @@ public class AlternateImagesApplication {
         List<Map<String, String>> conversation = new ArrayList<>();
         Map<String, String> systemMessage = new HashMap<>();
         systemMessage.put("role", "system");
-        String engineeredPrompt = "You only generate responses used to describe images. Respond with a description for an image prompt of the answer only";
+        String engineeredPrompt = "Provide the answer as a description that can be used as an image prompt that can best describe the answer as a visual";
         log.debug("Fetching answer with prompt: {}", engineeredPrompt);
         systemMessage.put("content", engineeredPrompt);
         conversation.add(systemMessage);
