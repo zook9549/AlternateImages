@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ImageGenerationService {
 
-    public List<BufferedImage> getImage(String prompt, Styles style);
+    List<BufferedImage> getImage(String prompt, Styles style);
 }

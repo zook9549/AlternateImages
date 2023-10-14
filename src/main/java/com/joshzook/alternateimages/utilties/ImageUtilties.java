@@ -95,10 +95,14 @@ public class ImageUtilties {
         return appendedImage;
     }
 
-    public static byte[] getByteArray(BufferedImage img) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ImageIO.write(img, "png", bos);
-        return bos.toByteArray();
+    public static byte[] getByteArray(BufferedImage img) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(img, "png", baos);
+            baos.flush();
+            return baos.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to convert image to byte array", e);
+        }
     }
 
     public static byte[] resizeImage(byte[] imageBytes, int targetWidth, int targetHeight) {

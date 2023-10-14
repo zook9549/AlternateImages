@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 
 public interface DisplayService {
 
-    public void display(BufferedImage image);
+    void display(BufferedImage image);
 
-    public Display getDetails();
+    Display getDetails();
 }
