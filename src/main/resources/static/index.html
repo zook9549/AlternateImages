@@ -18,7 +18,10 @@
             text-align: center;
             font-size: xx-large;
         }
-
+        #styles {
+            margin-right:30px;
+            width: 400px;
+        }
         blockquote {
             font-size: 1em;
             margin: 50px auto;
@@ -97,12 +100,12 @@
             padding-right: 20px;
         }
 
-        #cancel {
-            position: absolute;
+        #cancel, #replay, #clear  {
+            position: relative;
             top: 5px;
             cursor: pointer;
             font-size: 36px;
-            background-color: #f3f3f3; /* Light background for visibility */
+           /* background-color: #f3f3f3; /* Light background for visibility */
             border-radius: 50%; /* Makes it circular */
             padding: 2px 5px;
         }
@@ -157,19 +160,28 @@
             Object.keys(data).forEach(key => {
                 var option = document.createElement('option');
                 option.value = key;
-                option.text = data[key];
+                option.text = capitalizeWords(data[key]);
                 select.appendChild(option);
             });
         }
 
-        function push() {
+        function stopDisplay() {
+            fetch(`./clear`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+        }
+
+        function push(action) {
             let generating = document.getElementById('generating');
             let container = document.getElementById('img-container');
             container.style.display = "none";
             let style = document.getElementById('styles');
             generating.innerHTML = 'Generating image...';
             generating.style.display = "block";
-            let questionUrl = "./ask?prompt=" + encodeURIComponent(document.getElementById('question').value);
+            let questionUrl = "./" + action + "?prompt=" + encodeURIComponent(document.getElementById('question').value);
             if(style != "") {
                 questionUrl += "&style=" + style.value;
             }
@@ -192,9 +204,15 @@
                 });
         }
         function parseResponse(data) {
+            if(data.prompt == null) {
+                document.getElementById('generating').innerHTML = "No images to display.";
+                return;
+            }
             const container = document.getElementById('img-container');
             container.innerHTML = "";
             const prompt = document.createElement('blockquote');
+            document.getElementById('question').value = data.question;
+            document.getElementById('styles').value = data.style;
             prompt.innerHTML = data.prompt;
             container.appendChild(prompt);
             for (let key in data.images) {
@@ -222,6 +240,12 @@
             document.getElementById('question').value = '';
             document.getElementById('question').focus();
         }
+
+        function capitalizeWords(str) {
+            return str.replace(/\w\S*/g, function(txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+        }
     </script>
 </head>
 <body>
@@ -232,12 +256,14 @@
                 <options>
                 </options>
             </select>
+            <span class="material-icons" onclick="clearTextarea()" id="cancel" title="Clear the Question">cancel</span>
+            <span class="material-icons" onclick="push('current')" id="replay" title="Fetch Last Set of Results">replay</span>
+            <span class="material-icons" onclick="stopDisplay()" id="clear" title="Stop Display of Images">clear_all</span>
         </div>
         <div class="textarea-container">
             <textarea id="question" placeholder="Enter your image prompt here..."></textarea>
-            <span class="material-icons" onclick="clearTextarea()" id="cancel" title="Clear the Question">cancel</span>
         </div>
-        <button id="push-button" type="button" onclick="push()">Push It!</button>
+        <button id="push-button" type="button" onclick="push('ask')">Push It!</button>
     </div>
     <div id="generating">Generating Image...</div>
     <div id="img-container">

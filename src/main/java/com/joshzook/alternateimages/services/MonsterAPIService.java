@@ -25,7 +25,6 @@ import java.util.Map;
 public class MonsterAPIService implements ImageGenerationService {
     @Override
     public List<BufferedImage> getImage(String prompt, Styles style) {
-        log.debug("Asking Monster API {}", prompt);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + key);
@@ -35,13 +34,14 @@ public class MonsterAPIService implements ImageGenerationService {
         body.add("aspect_ratio", "landscape");
         body.add("samples", 2);
         if (style != null) {
+            prompt = "Create in the style of " + style.getDisplayName() + ". " + prompt;
             String mappedStyle = mapStyle(style);
             if(mappedStyle != null) {
                 body.add("style", mappedStyle);
-                prompt = "Create in the style of " + style.getDisplayName() + ". " + prompt;
             }
         }
         body.add("prompt", prompt);
+        log.debug("Asking Monster API {}", prompt);
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         RestTemplate restTemplate = new RestTemplate();
@@ -87,6 +87,9 @@ public class MonsterAPIService implements ImageGenerationService {
         }
     }
     private String mapStyle(Styles style) {
+        if(style == null) {
+            return null;
+        }
         switch (style) {
             case analog_film:
                 return "analog-film";

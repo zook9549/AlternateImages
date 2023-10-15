@@ -32,7 +32,7 @@ public class ChatGPTService implements AnswerService, ImageGenerationService {
         List<Map<String, String>> conversation = new ArrayList<>();
         Map<String, String> systemMessage = new HashMap<>();
         systemMessage.put("role", "system");
-        String engineeredPrompt = "Provide the answer as a description that can be used as an image prompt that can best describe the answer as a visual";
+        String engineeredPrompt = "Answer without stating that you cannot predict the future. Provide the answer as a description that can be used as an image prompt that can best describe the answer as a visual.";
         log.debug("Fetching answer with prompt: {}", engineeredPrompt);
         systemMessage.put("content", engineeredPrompt);
         conversation.add(systemMessage);
@@ -42,8 +42,8 @@ public class ChatGPTService implements AnswerService, ImageGenerationService {
         conversation.add(userMessage);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("max_tokens", 200);
-        requestBody.put("temperature", 0.5);
+        requestBody.put("max_tokens", 100);
+        requestBody.put("temperature", 0.8);
         requestBody.put("model", "gpt-4");
         requestBody.put("messages", conversation);
 

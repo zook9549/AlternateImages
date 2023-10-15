@@ -1,10 +1,10 @@
 package com.joshzook.alternateimages;
 
+import com.joshzook.alternateimages.models.DisplayResults;
 import com.joshzook.alternateimages.models.Styles;
 import com.joshzook.alternateimages.services.AnswerService;
 import com.joshzook.alternateimages.services.DisplayService;
 import com.joshzook.alternateimages.services.ImageGenerationService;
-import com.joshzook.alternateimages.utilties.ImageUtilties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @SpringBootApplication
 @RestController
@@ -39,42 +35,35 @@ public class AlternateImagesApplication {
     }
 
     @RequestMapping(value = "/ask", produces = "application/json")
-    public Map<String, Object> answer(@RequestParam(name = "prompt") String question, @RequestParam(required = false) Styles style) throws Exception {
+    public DisplayResults answer(@RequestParam(name = "prompt") String question, @RequestParam(required = false) Styles style) {
         String answer;
         if (answerService.isQuestion(question)) {
             answer = answerService.getAnswer(question);
         } else {
             answer = question;
         }
-        Map<String, Object> response = new HashMap<>();
         Map<String, List<BufferedImage>> imgs = getImage(answer, style);
-        Map<String, List<byte[]>> byteMap = convertToByteMap(imgs);
-        response.put("images", byteMap);
-        response.put("device", displayService.getDetails());
-        response.put("prompt", answer);
-        bufferedImages.clear();
-        List<BufferedImage> allImages = imgs.values()
-                .stream()
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
-        bufferedImages.addAll(allImages);
-        return response;
+        synchronized (displayResults) {
+            displayResults.setQuestion(question);
+            displayResults.setPrompt(answer);
+            displayResults.setStyle(style);
+            displayResults.setImages(imgs);
+        }
+        return displayResults;
     }
 
-    @RequestMapping(value = "/image", produces = "image/png")
-    public Map<String, List<BufferedImage>> getImage(String prompt, @RequestParam(required = false) Styles style) {
-        Map<String, List<BufferedImage>> response = new HashMap<>();
-        for (ImageGenerationService imageGenerationService : imageGenerationServices) {
-            List<BufferedImage> parsedImages = new ArrayList<>();
-            try {
-                parsedImages.addAll(imageGenerationService.getImage(prompt, style));
-                response.put(imageGenerationService.getClass().getSimpleName(), parsedImages);
-            } catch (Exception e) {
-                log.error("Error getting image from service", e);
-            }
-        }
+    @RequestMapping(value = "/current", produces = "application/json")
+    public DisplayResults getCurrentDisplayResults() {
+        return displayResults;
+    }
 
-        return response;
+    @RequestMapping(value = "/clear", produces = "application/json")
+    public boolean clearDisplayResults() {
+        displayResults.setQuestion(null);
+        displayResults.setPrompt(null);
+        displayResults.setStyle(null);
+        displayResults.setImages(null);
+        return true;
     }
 
     @RequestMapping(value = "/styles")
@@ -88,8 +77,8 @@ public class AlternateImagesApplication {
 
     @Scheduled(fixedRate = 2000)
     public void pushImages() throws Exception {
-        List<BufferedImage> images = new ArrayList<>(bufferedImages);
-        if (!images.isEmpty()) {
+        if (displayResults.getImages() != null && !displayResults.getImages().isEmpty()) {
+            List<BufferedImage> images = displayResults.getImages().values().stream().flatMap(List::stream).toList();
             for (BufferedImage bufferedImage : images) {
                 displayService.display(bufferedImage);
                 Thread.sleep(displayPushDelay);
@@ -97,25 +86,23 @@ public class AlternateImagesApplication {
         }
     }
 
-    private Map<String, List<byte[]>> convertToByteMap(Map<String, List<BufferedImage>> imageMap) {
-        return imageMap.entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> convertImageListToByteList(entry.getValue())
-                ));
-    }
-
-    private List<byte[]> convertImageListToByteList(List<BufferedImage> images) {
-        return images.stream()
-                .map(ImageUtilties::getByteArray)
-                .collect(Collectors.toList());
+    private Map<String, List<BufferedImage>> getImage(String prompt, @RequestParam(required = false) Styles style) {
+        Map<String, List<BufferedImage>> response = new HashMap<>();
+        for (ImageGenerationService imageGenerationService : imageGenerationServices) {
+            try {
+                List<BufferedImage> parsedImages = new ArrayList<>(imageGenerationService.getImage(prompt, style));
+                response.put(imageGenerationService.getClass().getSimpleName(), parsedImages);
+            } catch (Exception e) {
+                log.error("Error getting image from service", e);
+            }
+        }
+        return response;
     }
 
     private final AnswerService answerService;
     private final List<ImageGenerationService> imageGenerationServices;
     private final DisplayService displayService;
-    private final List<BufferedImage> bufferedImages = new ArrayList<>();
+    private final DisplayResults displayResults = new DisplayResults();
 
     @Value("${display.push.delay}")
     private int displayPushDelay;

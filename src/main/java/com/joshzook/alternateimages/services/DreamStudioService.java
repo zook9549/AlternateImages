@@ -68,13 +68,16 @@ public class DreamStudioService implements ImageGenerationService {
     }
 
     private String mapStyle(Styles style) {
+        if(style == null) {
+            return null;
+        }
         switch (style) {
             case analog_film:
                 return "analog-film";
             case anime:
                 return "anime";
             case cinematic:
-                return "expressionism";
+                return "cinematic";
             case comic_book:
                 return "comic-book";
             case digital_art:

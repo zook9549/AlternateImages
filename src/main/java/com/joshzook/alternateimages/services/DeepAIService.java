@@ -68,6 +68,9 @@ public class DeepAIService implements ImageGenerationService {
     }
 
     private String mapStyle(Styles style) {
+        if(style == null) {
+            return "text2img";
+        }
         switch (style) {
             case cute:
                 return "cute-creature-generator";
