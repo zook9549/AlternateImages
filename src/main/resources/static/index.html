@@ -19,8 +19,8 @@
             font-size: xx-large;
         }
         #styles {
-            margin-right:30px;
-            width: 400px;
+            width: 620px;
+            padding: 20px;
         }
         blockquote {
             font-size: 1em;
@@ -28,7 +28,7 @@
             text-align: justify;
             color: #555555;
             padding: 1.2em 30px 1.2em 80px;
-            border-left: 8px solid #78C0A8;
+            border-left: 8px solid #7459fe;
             line-height: 1.6;
             position: relative;
             background: #EDEDED;
@@ -37,7 +37,7 @@
         blockquote::before {
             font-family: Arial, sans-serif;
             content: "\201C";  /* Open quote */
-            color: #78C0A8;   /* Quote color */
+            color: #7459fe;   /* Quote color */
             font-size: 4em;
             position: absolute;
             left: 10px;
@@ -84,7 +84,7 @@
 
         textarea {
             width: 80vw;
-            max-width: 800px;
+            max-width: 775px;
             height: 10vh;
             min-height: 100px;
             padding-top: 10px;
@@ -101,15 +101,19 @@
         }
 
         #cancel, #replay, #clear  {
-            position: relative;
-            top: 5px;
+            top: 10px;
             cursor: pointer;
-            font-size: 36px;
+            font-size: xxx-large;
            /* background-color: #f3f3f3; /* Light background for visibility */
             border-radius: 50%; /* Makes it circular */
-            padding: 2px 5px;
+            margin: 5px;
         }
 
+        #select-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         #generating {
             display: none;
         }
@@ -251,7 +255,7 @@
 <body>
 <div id="content">
     <div>
-        <div>
+        <div id="select-container">
             <select id="styles">
                 <options>
                 </options>
