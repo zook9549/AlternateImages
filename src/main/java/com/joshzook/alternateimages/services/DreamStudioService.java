@@ -24,23 +24,28 @@ import java.util.stream.Collectors;
 public class DreamStudioService implements ImageGenerationService {
     @Override
     public List<BufferedImage> getImage(String prompt, Styles style) {
-        if (style != null) {
-            prompt = "Create in the style of " + style.getDisplayName() + "." + prompt;
-        }
-
         log.debug("Asking Dream Studio API {}", prompt);
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + key);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        Map<String, String> textPrompts = new HashMap<>();
-        textPrompts.put("text", prompt);
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("height", 512);
         requestBody.put("width", 1024);
         requestBody.put("samples", 2);
+        if (style != null) {
+            String mappedStyle = mapStyle(style);
+            if(mappedStyle != null) {
+                requestBody.put("style_preset", mappedStyle);
+            } else {
+                prompt = "Create in the style of " + style.getDisplayName() + ". " + prompt;
+            }
+        }
+
+        Map<String, String> textPrompts = new HashMap<>();
+        textPrompts.put("text", prompt);
         requestBody.put("text_prompts", Collections.singletonList(textPrompts));
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
@@ -60,6 +65,41 @@ public class DreamStudioService implements ImageGenerationService {
                 .collect(Collectors.toList());
         log.debug("Completed getting image response from Dream Studio API");
         return parsedImages;
+    }
+
+    private String mapStyle(Styles style) {
+        switch (style) {
+            case analog_film:
+                return "analog-film";
+            case anime:
+                return "anime";
+            case cinematic:
+                return "expressionism";
+            case comic_book:
+                return "comic-book";
+            case digital_art:
+                return "digital-art";
+            case enhance:
+                return "enhance";
+            case fantasy_art:
+                return "fantasy-art";
+            case isometric:
+                return "isometric";
+            case line_art:
+                return "line-art";
+            case lowpoly:
+                return "low-poly";
+            case neonpunk, cyberpunk:
+                return "neon-punk";
+            case origami:
+                return "origami";
+            case photographic:
+                return "photographic";
+            case pixel:
+                return "pixel-art";
+            default:
+                return null;
+        }
     }
 
     @Value("${dreamstudio.api.key}")

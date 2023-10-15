@@ -42,7 +42,7 @@ public class DeepAIService implements ImageGenerationService {
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Map> response = restTemplate.exchange(deepApiUrl + "/text2img", HttpMethod.POST, requestEntity, Map.class);
+        ResponseEntity<Map> response = restTemplate.exchange(deepApiUrl + '/' + mapStyle(style), HttpMethod.POST, requestEntity, Map.class);
         String result = response.getBody().get("output_url").toString();
         log.debug("Completed getting image response from DeepAI: {}", result);
         BufferedImage originalImage;
@@ -65,6 +65,39 @@ public class DeepAIService implements ImageGenerationService {
             }
         }
         return Arrays.asList(subImages);
+    }
+
+    private String mapStyle(Styles style) {
+        switch (style) {
+            case cute:
+                return "cute-creature-generator";
+            case fantasy_art:
+                return "fantasy-portrait-generator";
+            case anime:
+                return "anime-portrait-generator";
+            case impressionism:
+                return "impressionism-painting-generator";
+            case artistic:
+                return "renaissance-painting-generator";
+            case old_style:
+                return "old-style-generator";
+            case cyberpunk, neonpunk:
+                return "cyberpunk-portrait-generator";
+            case logo:
+                return "logo-generator";
+            case watercolor:
+                return "watercolor-painting-generator";
+            case pop_art:
+                return "pop-art-generator";
+            case origami:
+                return "origami-3d-generator";
+            case pixel:
+                return "pixel-art-generator";
+            case photorealistic:
+                return "photorealistic-portrait-generator";
+            default:
+                return "text2img";
+        }
     }
 
     @Value("${deepai.api.key}")

@@ -25,20 +25,25 @@ import java.util.Map;
 public class MonsterAPIService implements ImageGenerationService {
     @Override
     public List<BufferedImage> getImage(String prompt, Styles style) {
-        if (style != null) {
-            prompt = "Create in the style of " + style.getDisplayName() + "." + prompt;
-        }
         log.debug("Asking Monster API {}", prompt);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + key);
         headers.set("Content-Type", "multipart/form-data");
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("prompt", prompt);
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("aspect_ratio", "landscape");
+        body.add("samples", 2);
+        if (style != null) {
+            String mappedStyle = mapStyle(style);
+            if(mappedStyle != null) {
+                body.add("style", mappedStyle);
+                prompt = "Create in the style of " + style.getDisplayName() + ". " + prompt;
+            }
+        }
+        body.add("prompt", prompt);
 
-        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Map> response = restTemplate.exchange(url + "/generate/txt2img", HttpMethod.POST, requestEntity, Map.class);
         String processId = (String) response.getBody().get("process_id");
@@ -79,6 +84,42 @@ public class MonsterAPIService implements ImageGenerationService {
                 throw new RuntimeException(e);
             }
             return fetchResults(processId);
+        }
+    }
+    private String mapStyle(Styles style) {
+        switch (style) {
+            case analog_film:
+                return "analog-film";
+            case anime:
+                return "anime";
+            case cinematic:
+                return "expressionism";
+            case comic_book:
+                return "comic-book";
+            case digital_art:
+                return "digital-art";
+            case enhance:
+                return "enhance";
+            case fantasy_art:
+                return "fantasy-art";
+            case isometric:
+                return "isometric";
+            case line_art:
+                return "line-art";
+            case lowpoly:
+                return "lowpoly";
+            case neonpunk, cyberpunk:
+                return "neonpunk";
+            case origami:
+                return "origami";
+            case photographic:
+                return "photographic";
+            case watercolor:
+                return "watercolor";
+            case pixel:
+                return "pixel-art";
+            default:
+                return null;
         }
     }
 
